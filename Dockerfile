@@ -8,6 +8,10 @@ WORKDIR /usr/src/app
 COPY web/package.json ./
 COPY web/yarn.lock ./
 
+# Create a new user with UID 10014
+RUN addgroup -g 10014 choreo && \
+    adduser  --disabled-password  --no-create-home --uid 10014 --ingroup choreo choreouser
+
 # If you are building your code for production
 # RUN npm ci --omit=dev
 
@@ -19,6 +23,10 @@ RUN yarn && yarn build && yarn cache clean
 #                   Build gitness image                    #
 # ---------------------------------------------------------#
 FROM --platform=$BUILDPLATFORM golang:1.22-alpine3.18 as builder
+
+# Create a new user with UID 10014
+RUN addgroup -g 10014 choreo && \
+    adduser  --disabled-password  --no-create-home --uid 10014 --ingroup choreo choreouser
 
 RUN apk update \
     && apk add --no-cache protoc build-base git
@@ -70,6 +78,9 @@ RUN apk --update add ca-certificates
 #                   Create final image                     #
 # ---------------------------------------------------------#
 FROM --platform=$TARGETPLATFORM alpine/git:2.43.0 as final
+# Create a new user with UID 10014
+RUN addgroup -g 10014 choreo && \
+    adduser  --disabled-password  --no-create-home --uid 10014 --ingroup choreo choreouser
 
 # setup app dir and its content
 WORKDIR /app
