@@ -3,6 +3,10 @@
 # ---------------------------------------------------------#
 FROM --platform=$BUILDPLATFORM node:16 as web
 
+# Create a new user with UID 10014
+RUN addgroup -g 10014 gitness && \
+    adduser  --disabled-password  --no-create-home --uid 10014 --ingroup gitness gitnessuser
+
 WORKDIR /usr/src/app
 
 COPY web/package.json ./
@@ -19,6 +23,10 @@ RUN yarn && yarn build && yarn cache clean
 #                   Build gitness image                    #
 # ---------------------------------------------------------#
 FROM --platform=$BUILDPLATFORM golang:1.22-alpine3.18 as builder
+
+# Create a new user with UID 10014
+RUN addgroup -g 10014 gitness && \
+    adduser  --disabled-password  --no-create-home --uid 10014 --ingroup gitness gitnessuser
 
 RUN apk update \
     && apk add --no-cache protoc build-base git
@@ -63,6 +71,10 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 ### Pull CA Certs
 FROM --platform=$BUILDPLATFORM alpine:latest as cert-image
+
+# Create a new user with UID 10014
+RUN addgroup -g 10014 gitness && \
+    adduser  --disabled-password  --no-create-home --uid 10014 --ingroup gitness gitnessuser
 
 RUN apk --update add ca-certificates
 
